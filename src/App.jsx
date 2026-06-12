@@ -75,25 +75,50 @@ export default function App() {
   }, [showBook, scrollToChapter]);
 
   // Touch swipe
+  // Touch swipe — substitua o useEffect atual
   useEffect(() => {
     if (!showBook) return;
     const container = scrollRef.current;
     if (!container) return;
-    let startX = 0, startY = 0;
+    let startX = 0, startY = 0, locked = null;
 
-    const onStart = (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; };
+    const onStart = (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      locked = null; // reset a cada toque
+    };
+
+    const onMove = (e) => {
+      if (locked === 'vertical') return; // deixa rolar normalmente
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+
+      if (locked === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        locked = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical';
+      }
+
+      // Se for swipe horizontal, bloqueia o scroll padrão
+      if (locked === 'horizontal') e.preventDefault();
+    };
+
     const onEnd = (e) => {
+      if (locked !== 'horizontal') return; // ignora se foi scroll vertical
       const dx = e.changedTouches[0].clientX - startX;
-      const dy = e.changedTouches[0].clientY - startY;
-      // Only treat as horizontal swipe if dx dominates
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 44) {
+      if (Math.abs(dx) > 44) {
         if (dx < 0) setCurrentChapter(prev => { const n = Math.min(prev + 1, chapters.length - 1); scrollToChapter(n); return n; });
         else setCurrentChapter(prev => { const n = Math.max(prev - 1, 0); scrollToChapter(n); return n; });
       }
     };
+
     container.addEventListener('touchstart', onStart, { passive: true });
+    container.addEventListener('touchmove', onMove, { passive: false }); // ← passive: false para poder chamar preventDefault
     container.addEventListener('touchend', onEnd, { passive: true });
-    return () => { container.removeEventListener('touchstart', onStart); container.removeEventListener('touchend', onEnd); };
+
+    return () => {
+      container.removeEventListener('touchstart', onStart);
+      container.removeEventListener('touchmove', onMove);
+      container.removeEventListener('touchend', onEnd);
+    };
   }, [showBook, scrollToChapter]);
 
   return (
@@ -130,8 +155,8 @@ export default function App() {
                 flexDirection: 'row',
                 overflowX: 'hidden',
                 overflowY: 'hidden',
-                width: '100vw',
-                height: '100svh',
+                width: '100%',        // ← era 100vw
+                height: '100dvh',     // ← dvh é mais confiável em mobile
                 scrollSnapType: 'x mandatory',
               }}
             >
@@ -140,10 +165,10 @@ export default function App() {
                   key={chapter.id}
                   style={{
                     flexShrink: 0,
-                    width: '100vw',
-                    height: '100svh',
+                    width: '100vw',       // aqui pode manter 100vw
+                    height: '100dvh',     // ← dvh
                     scrollSnapAlign: 'start',
-                    overflowY: 'auto',   /* allows inner vertical scroll on mobile */
+                    overflowY: 'auto',
                     overflowX: 'hidden',
                     position: 'relative',
                   }}
@@ -163,27 +188,6 @@ export default function App() {
             </div>
 
             {/* Swipe hint */}
-            <AnimatePresence>
-              {currentChapter === 0 && (
-                <motion.div
-                  style={{ position: 'fixed', top: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 50 }}
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ delay: 1.2, duration: 0.6 }}
-                >
-                  <p style={{
-                    fontFamily: '"Cormorant Garamond", serif',
-                    fontSize: '10px',
-                    color: '#A0484C',
-                    opacity: 0.5,
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    whiteSpace: 'nowrap',
-                  }}>← deslize para ler →</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             <Navigation
               current={currentChapter}
