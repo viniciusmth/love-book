@@ -122,7 +122,7 @@ export default function App() {
   }, [showBook, scrollToChapter]);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <FloatingPetals />
 
       <AnimatePresence mode="wait">
