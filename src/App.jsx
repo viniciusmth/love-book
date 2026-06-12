@@ -67,7 +67,7 @@ export default function App() {
       if (now - last < 650) return;
       last = now;
       const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      if (delta > 20)  setCurrentChapter(prev => { const n = Math.min(prev + 1, chapters.length - 1); scrollToChapter(n); return n; });
+      if (delta > 20) setCurrentChapter(prev => { const n = Math.min(prev + 1, chapters.length - 1); scrollToChapter(n); return n; });
       if (delta < -20) setCurrentChapter(prev => { const n = Math.max(prev - 1, 0); scrollToChapter(n); return n; });
     };
     container.addEventListener('wheel', handleWheel, { passive: false });
@@ -82,17 +82,17 @@ export default function App() {
     let startX = 0, startY = 0;
 
     const onStart = (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; };
-    const onEnd   = (e) => {
+    const onEnd = (e) => {
       const dx = e.changedTouches[0].clientX - startX;
       const dy = e.changedTouches[0].clientY - startY;
       // Only treat as horizontal swipe if dx dominates
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 44) {
         if (dx < 0) setCurrentChapter(prev => { const n = Math.min(prev + 1, chapters.length - 1); scrollToChapter(n); return n; });
-        else        setCurrentChapter(prev => { const n = Math.max(prev - 1, 0); scrollToChapter(n); return n; });
+        else setCurrentChapter(prev => { const n = Math.max(prev - 1, 0); scrollToChapter(n); return n; });
       }
     };
     container.addEventListener('touchstart', onStart, { passive: true });
-    container.addEventListener('touchend',   onEnd,   { passive: true });
+    container.addEventListener('touchend', onEnd, { passive: true });
     return () => { container.removeEventListener('touchstart', onStart); container.removeEventListener('touchend', onEnd); };
   }, [showBook, scrollToChapter]);
 

@@ -459,10 +459,12 @@ body {
    NAVIGATION BAR
 ───────────────────────────────────────── */
 .nav-bar {
-  position: absolute;
+  position: fixed;
   bottom: 1.25rem;
-  left: 40%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -473,6 +475,8 @@ body {
   border-radius: 40px;
   padding: 0.45rem 0.85rem;
   box-shadow: 0 4px 24px rgba(44, 24, 16, 0.08);
+  max-width: calc(100vw - 2rem);
+  box-sizing: border-box;
 }
 
 .nav-btn {
